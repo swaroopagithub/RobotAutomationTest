@@ -1,0 +1,4 @@
+*** Variables ***
+${ExcelPath}      C:\\LearningAutomation\\TestData\\LoginDetails.xlsx
+${Filepath}       C:/LearningAutomation/Test
+${Browser1}       gc

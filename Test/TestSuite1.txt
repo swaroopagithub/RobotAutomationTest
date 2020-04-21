@@ -1,0 +1,137 @@
+*** Settings ***
+Library           SeleniumLibrary
+Library           Collections
+Library           String
+Library           OperatingSystem
+Library           ../CustomLibraries/EntelExcelLibary.py
+Resource          ../ObjectRepository/LearningAutomatn.txt
+Library           DateTime
+Resource          ../ReusableFunctions/Keywords.txt
+Library           RequestsLibrary
+Library           XML
+Library           DatabaseLibrary
+Library           ExcelLibrary
+Library           ../../TELIA_Automation/CustomLibrary/excel library.py
+
+*** Variables ***
+
+*** Test Cases ***
+FirstTC
+    # Login to Myntra
+    Login
+    Add_Product_To_Bag
+    Logout
+    [Teardown]
+
+IMDB
+    Open Browser    https://www.imdb.com/    gc
+    Maximize Browser Window
+    Click Element    //div[text()='Sign In']
+    Click Element    //span[contains(text(),'Sign in with Google')]
+    ${Movie}    Set Variable    Avatar (2009)
+    sleep    2s
+    Input Text    //input[@id='identifierId']    chswaroopa19@gmail.com
+    Click Element    //span[contains(text(),'Next')]
+    sleep    3s
+    Input Password    //input[@name='password']    chennai@19
+    Click Element    //span[contains(text(),'Next')]
+    ### Search Movie
+    sleep    3s
+    Assign Id To Element    //input[@id='suggestion-search']    Mvi
+    Input Text    Mvi    Avatar (2009)
+    sleep    3s
+    Click Element    //a[@href='/title/tt0499549?ref_=nv_sr_srsg_0']
+    #Add To WatchList
+    Click Element    //div[text()='Add to Watchlist']
+    ## Go to Watch List
+    sleep    3s
+    Click Element    //div[@class='sc-kpOJdX RWCCJ imdb-header__watchlist-button']/a/div
+    ## Verify in WatchList
+    Page Should Contain Element    //h3[@class='lister-item-header']    Avatar
+    ## Verify Director and Writer
+    sleep    2s
+    Click Element    //a[@href='/title/tt0499549/?ref_=wl_li_tt']
+    Comment    sleep    2s
+    ${Director}    Get text    //a[@href='/name/nm0000116/?ref_=tt_ov_dr']
+    Should Be Equal    ${Director}    James Cameron
+    ${Writer}    Get text    //a[@href='/name/nm0000116/?ref_=tt_ov_wr']
+    Should Be Equal    ${Director}    James Cameron
+    ## Delete from WatchList
+    Click Element    (//div[@title='Click to remove from watchlist'])[1]
+    # Logout
+    Click Element    (//span[text()='Swaroopa'])[1]
+    sleep    2s
+    Mouse Over    //a[@href="/registration/logout?u=%2Ftitle%2Ftt0499549%2F&ref_=nv_usr_lgout_6"]
+    Click Element    //a[@href="/registration/logout?u=%2Ftitle%2Ftt0499549%2F&ref_=nv_usr_lgout_6"]
+
+Api_TC
+    Create Session    IMDB    http://www.omdbapi.com/?
+    &{params}=    Create Dictionary    t=Avatar    apikey=a4223779
+    &{headers}=    Create Dictionary    content-type =application/json; charset=utf-8
+    ${resp}=    Get Request    IMDB    /    params=${params}    headers=${headers}
+    Should Be Equal As Strings    ${resp.status_code}    200
+    ${dir}    Set Variable    ${resp.json()['Director']}
+    ${writer}    Set Variable    ${resp.json()['Writer']}
+    Log    ${dir}
+    Log    ${writer}
+    Should Be Equal    ${dir}    James Cameron
+    Should Be Equal    ${writer}    James Cameron
+
+Demo1
+    Create Directory    C:\Automation Learning
+    @{CurrentTime}    Get Time
+    log    ${time}
+    ${time}    Get Substring    ${time}    0    10
+    log    ${time}
+    Comment    Create Directory    C:/Users/ezsaich/Desktop/Hii/'hello'+${time}
+    log    ${CURDIR}
+
+Demo
+    ${str1}    Set Variable    Passion Dedication learn
+    Log    ${str1}
+    @{Splittedvalues}    Split String    ${str1}
+    Log Many    @{Splittedvalues}[1]
+    : FOR    ${i}    IN    @{Splittedvalues}
+    \    log    ${i}
+    \    Run Keyword If    '${i}'=='Dedication'    Open Browser
+    \    \    log    Passion
+    Comment    ${substr}    Get Substring    ${str1}    8    18
+    Comment    log    ${substr}
+    Input Text    //input[@class='desktop-searchBar']    Earphone
+    Comment    Wait Until Element Is Visible    Click Element    //*[@class='desktop-submit']
+    Comment    Select Checkbox    //label[text()='JBL']//input
+    Assign Id To Element    //input[@type='checkbox' and @value='0M-6M']    abc
+    Execute Javascript    arguments[0].click();,id=abc
+    Click Button    //button[text()='APPLY']
+    Comment    Handle Alert    LEAVE
+    ${m}    Get Window Handles
+    log    ${m}
+    ${elmtcount}    SeleniumLibrary.Get Element Count    //table/tbody/tr/td[2]
+    log    ${elmtcount}
+    ${count}=    Evaluate    ${elmtcount}+1
+    : FOR    ${i}    IN RANGE    1    ${count}
+    \    log    ${i}
+    \    ${Browser_Movie_Nam}    Get Text    //table/tbody/tr[${i}]/td[2]
+    \    log    ${Browser_Movie_Nam}=
+    \    Run Keyword If    '${Browser_Movie_Nam}'=='${Movie}'    Click Element    (//table/tbody/tr[${i}]/td[2])[1]
+    \    Exit For Loop
+    ${Movie_in_Wishlist}    Get Text    //h3[@class='lister-item-header']
+    Log    ${Movie_in_Wishlist}
+    ${TitleYear}    Get Text    //span[text()='2009']
+    ${str}    Catenate    ${Movie_in_Wishlist}    ${TitleYear}
+    Run Keyword If    '${str}'=='${Movie}'    log    Movie added
+    ...    ELSE    Log    Failed
+
+dEMO2
+    Open Browser    https://www.seleniumeasy.com/test/javascript-alert-box-demo.html    gc
+    Click Element    (//button[text()='Click me!'])[2]
+    sleep    3s
+    ${msg}=    Handle Alert
+
+ReadExel
+    ${rowCount}    Total Rows    ${ExcelPath}    Testdat
+    :FOR    ${N}    IN RANGE    1    ${rowCount}
+    \    &{data}    Return Dictionary From Excel    ${N}    ${ExcelPath}    Testdat
+    \    Comment    Set Test Variable    ${N}
+    \    ${Browser Name}    Set Variable    ${data.BrowserName}
+    \    log    ${Browser Name}

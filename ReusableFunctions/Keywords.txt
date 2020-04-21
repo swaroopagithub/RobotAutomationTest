@@ -1,0 +1,65 @@
+*** Settings ***
+Library           SeleniumLibrary
+Library           String
+Library           Collections
+Library           OperatingSystem
+Library           ../CustomLibraries/EntelExcelLibary.py
+
+*** Keywords ***
+ReadExcel
+    [Arguments]    ${SheetName}    ${row}    ${col}
+    ${data}=    Read From Excel    ${ExcelPath}    ${SheetName}    ${row}    ${Col}
+    [Return]    ${data}
+
+Login
+    #{Read From Excel}
+    ${Url}    ReadExcel    TestDatafl    2    2
+    ${Browser}    ReadExcel    TestDatafl    2    1
+    ${Username}    ReadExcel    TestDatafl    2    3
+    ${Password}    ReadExcel    TestDatafl    2    4
+    Open Browser    ${Url}    ${Browser}
+    Maximize Browser Window
+    Click Element    //div[@class='desktop-user']
+    Wait Until Element Is Visible    //a[contains(text(),'log in')]
+    Click Element    //a[contains(text(),'log in')]
+    sleep    2s
+    Input Text    //input[@name='email']    ${Username}
+    Input Password    //input[@type='password']    ${Password}
+    Click Button    //button[text()='Log in']
+    sleep    3s
+    ${logo}    Get Title
+    ${title}    Get Substring    ${logo}    6    15
+    log    ${title}
+    Capture Page Screenshot    C:/LearningAutomation/Screenshots/Login1.png
+
+Add_Product_To_Bag
+    # Search a product and add to the cart
+    Comment    sleep    2s
+    Set Focus To Element    //a[@href='/shop/kids']
+    Click Element    //a[@href='/shop/kids']
+    sleep    2s
+    Click Element    //a[@href='/boys-tshirts-menu?src=sNav']
+    sleep    2s
+    Set Focus To Element    //span[@class='atsa-downArrow sprites-arrowDownBold myntraweb-sprite']
+    Click Element    //span[@class='atsa-downArrow sprites-arrowDownBold myntraweb-sprite']
+    sleep    2s
+    Click Element    //label[text()='0M-6M']//div
+    Click Element    //ul[@class='results-base']/li[1]
+    sleep    2s
+    @{ab}    Get Window Handles
+    Select Window    @{ab}[1]
+    Comment    sleep    2s
+    Click Element    //div[@class='size-buttons-size-buttons']/div[1]/div/button
+    Click Element    //span[@class='myntraweb-sprite pdp-whiteBag sprites-whiteBag pdp-flex pdp-center']
+    Wait Until Element Is Visible    //a[@class='pdp-goToCart pdp-add-to-bag pdp-button pdp-flex pdp-center ']/span[2]
+    Page Should Contain Element    //*[@id="desktop-header-cnt"]/div[2]/div[2]/a[2]/span[3]
+    Close Window
+    Select Window    @{ab}[0]
+    sleep    3s
+    Capture Page Screenshot
+
+Logout
+    Mouse Over    //span[text()='Profile']
+    sleep    2s
+    Click Element    //div[text()=' Logout ']
+    Capture Page Screenshot

@@ -1,0 +1,60 @@
+*** Settings ***
+Library           SeleniumLibrary
+Library           Collections
+Library           String
+Library           OperatingSystem
+Library           DateTime
+Library           RequestsLibrary
+Library           JSONLibrary
+
+*** Variables ***
+${url}            https://www.facebook.com/
+@{LoginCredentials}    chswaroopa19@gmail.com    Ammaakka20    gc
+&{LoginDetails}    emailid=chswaroopa19@gmail.com    password=Ammaakka20
+
+*** Test Cases ***
+Variables
+    Open Browser    ${url}    @{LoginCredentials}[2]
+    Input Text    //input[@type='email']    @{LoginCredentials}[0]
+    Input Password    //input[@type='password']    @{LoginCredentials}[1]
+    Open Browser    ${url}    @{LoginCredentials}[2]
+    Input Text    //input[@type='email']    &{LoginDetails}[emailid]
+    Input Password    //input[@type='password']    &{LoginDetails}[password]
+
+ApiTest
+    Create Session    TestApi    https://reqres.in/api/users    verify=true
+    ${headers}    Create Dictionary    content-type=application/json
+    ${response}    Post Request    TestApi    https://reqres.in/api/users
+    log    ${response.content}
+    ${JsonResponse}    To Json    ${response.content}
+    ${id}    Get Value From Json    ${JsonResponse}    $.createdAt
+    log    ${id}
+
+ApiTest2
+    Create Session    TestApi1    https://reqres.in/api/login
+    ${headers}    Create Dictionary    content-type=application/json
+    ${response}    Post Request    TestApi1    https://reqres.in/api/login
+    log    ${response.content}
+    ${JsonResponse}    To Json    ${response.content}
+    ${token}    Get Value From Json    ${JsonResponse}    $.token
+    log    ${token}
+
+ApiGet
+    Create Session    Testapi    http://restapi.demoqa.com
+    Comment    &{params}    Create Dictionary    t=Hyderabad
+    &{headers}    Create Dictionary    content-type=application/json
+    ${response}    Get Request    Testapi    /utilities/weather/city/Hyderabad    headers=${headers}
+    log    ${response.content}
+    ${Json Response}    To Json    ${response.content}
+    ${Humidity}    Get Value From Json    ${Json Response}    $.Humidity
+    log    ${Humidity}
+
+time
+    ${dateTimeStamp}    Get Current Date    result_format=%d-%m-%Y-%H-%M-%S
+    log    ${dateTimeStamp}
+
+ApiGet2
+    Create Session    alias    https://reqres.in
+    &{headers}    Create Dictionary    content-type=application/json
+    ${response}    Get Request    alias    /api/users/2    headers=&{headers}
+    log    ${response.content}

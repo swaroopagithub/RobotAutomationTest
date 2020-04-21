@@ -1,0 +1,2 @@
+*** Variables ***
+${ExcelPath}      C:\LearningAutomation\TestData\LoginDetails
